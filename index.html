@@ -1,74 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Sec + Website</title>
   <style>
-    /* General Hacker Theme */
-    body {
-      font-family: "Courier New", monospace;
-      margin: 0;
-      background-color: #0d0d0d;
-      color: #00ff99;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+    :root{
+      --bg:#0b0b0b;
+      --panel:#171717;
+      --accent:#00ff99;
+      --text:#d9fbe9;
+      --muted:#bdbdbd;
+    }
+    /* Base hacker theme */
+    html,body{
+      height:100%;
+      margin:0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
-    /* Navbar */
-    .navbar {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      background: #111;
-      padding: 15px;
-      border-bottom: 2px solid #00ff99;
+    /* Canvas background */
+    #matrix {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      display:block;
+      background: radial-gradient(1200px 600px at 70% -10%, rgba(0,255,153,0.12), transparent 60%),
+                  radial-gradient(800px 400px at 20% 110%, rgba(0,255,153,0.08), transparent 60%),
+                  var(--bg);
     }
 
-    .navbar a {
-      color: #00ff99;
-      text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s;
+    /* Top nav */
+    .navbar{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      gap:30px;
+      background:#0f0f0f;
+      padding:14px 18px;
+      border-bottom: 1px solid rgba(0,255,153,0.35);
+      backdrop-filter: blur(2px);
     }
-
-    .navbar a:hover {
-      color: #fff;
-      text-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99;
+    .navbar a{
+      color: var(--accent);
+      text-decoration:none;
+      font-weight:700;
+      letter-spacing:.3px;
+      position:relative;
+      transition: color .2s ease;
     }
-
-    /* Content Box */
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      max-width: 800px;
-      width: 90%;
-      margin: 30px auto;
-      background: #1a1a1a;
-      padding: 30px;
-      border-radius: 8px;
-      border: 1px solid #00ff99;
-      text-align: center;
-      box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+    .navbar a::after{
+      content:"";
+      position:absolute;
+      left:0; bottom:-4px;
+      width:0; height:2px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      transition: width .2s ease;
     }
+    .navbar a:hover{ color:#fff; text-shadow:0 0 12px var(--accent); }
+    .navbar a:hover::after{ width:100%; }
 
-    h1 {
-      color: #00ff99;
-      text-shadow: 0 0 10px #00ff99;
+    /* Content panel */
+    .container{
+      max-width: 900px;
+      width: 92%;
+      margin: 36px auto;
+      background: color-mix(in srgb, var(--panel) 88%, black);
+      border: 1px solid rgba(0,255,153,0.35);
+      border-radius: 10px;
+      padding: 32px;
+      text-align:center;
+      box-shadow: 0 0 18px rgba(0,255,153,0.18);
     }
+    h1{
+      margin-top:6px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(0,255,153,0.8);
+      letter-spacing:.6px;
+    }
+    p{ color: var(--muted); }
 
-    p {
-      color: #cccccc;
+    /* Respect reduced motion: keep static background if user prefers */
+    @media (prefers-reduced-motion: reduce) {
+      #matrix { background: var(--bg); }
     }
   </style>
 </head>
 <body>
+  <canvas id="matrix" aria-hidden="true"></canvas>
+
   <nav class="navbar">
     <a href="./index.html">Home</a>
     <a href="Sec_plus flash cards.html">Flash Cards</a>
@@ -79,5 +102,96 @@
     <h1>Welcome to My Website</h1>
     <p>This is my Sec+ hosted on GitHub Pages!</p>
   </div>
+
+  <script>
+    // Matrix rain background — efficient and resolution-aware
+    (function(){
+      const canvas = document.getElementById('matrix');
+      const ctx = canvas.getContext('2d', { alpha: false });
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let w, h, cols, drops, fontSize, charSet, lastTime = 0;
+
+      // Character set: katakana + ASCII + digits for variety
+      charSet = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズヅブプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン' +
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+      function resize(){
+        // Account for device pixel ratio for crispness
+        const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+        w = canvas.clientWidth = window.innerWidth;
+        h = canvas.clientHeight = window.innerHeight;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        fontSize = Math.max(14, Math.floor(Math.min(w, h) / 50)); // responsive size
+        ctx.font = `${fontSize}px "Courier New", monospace`;
+        cols = Math.floor(w / fontSize);
+        drops = new Array(cols).fill(0).map(()=> Math.floor(Math.random() * -50)); // staggered start
+      }
+
+      function draw(ts){
+        // Throttle slightly for power savings
+        const delta = ts - lastTime;
+        if (delta < 16) { requestAnimationFrame(draw); return; }
+        lastTime = ts;
+
+        // Fade the canvas slightly to create trailing effect
+        ctx.fillStyle = 'rgba(11,11,11,0.08)';
+        ctx.fillRect(0, 0, w, h);
+
+        for (let i = 0; i < cols; i++) {
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+
+          // Bright leading char with glow; trailing chars softened by fade rectangle above
+          ctx.shadowColor = '#00ff99';
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = '#00ff99';
+          const char = charSet.charAt(Math.floor(Math.random() * charSet.length));
+          ctx.fillText(char, x, y);
+
+          ctx.shadowBlur = 0;
+
+          // Reset drop randomly after it passes bottom, with variability
+          if (y > h && Math.random() > 0.975) {
+            drops[i] = Math.floor(-Math.random() * 30);
+          } else {
+            drops[i]++;
+          }
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      function start(){
+        resize();
+        if (!prefersReduced) {
+          // Pre-darken background to reduce initial flash
+          ctx.fillStyle = '#0b0b0b';
+          ctx.fillRect(0,0,w,h);
+          requestAnimationFrame(draw);
+        } else {
+          // Static dark background when reduced motion is preferred
+          ctx.fillStyle = '#0b0b0b';
+          ctx.fillRect(0,0,w,h);
+        }
+      }
+
+      window.addEventListener('resize', resize, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        // Clear trails when tab becomes visible again to avoid jumpy artifacts
+        if (document.visibilityState === 'visible') {
+          ctx.fillStyle = '#0b0b0b';
+          ctx.fillRect(0,0,w,h);
+        }
+      });
+
+      start();
+    })();
+  </script>
 </body>
 </html>
+
+
