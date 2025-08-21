@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sec + Website</title>
+    <style>
+        /* Your CSS styles go here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to My Website</h1>
+        <p>This is my Sec + hosted on GitHub Pages!</p>
+        <button onclick="showMessage()">Click Me!</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Your JavaScript code goes here
+        function showMessage() {
+            document.getElementById('message').innerHTML = 
+                '<p>Hello from embedded JavaScript!</p>';
+        }
+    </script>
+</body>
+</html>
