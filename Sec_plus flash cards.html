@@ -314,9 +314,35 @@
                 gap: 15px;
             }
         }
+         .navbar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+    <div class="container">
+        <nav class="navbar">
+            <a href="index.html">Home</a>
+            <a href="Sec_plus flash cards.html">Flash Cards</a>
+            <a href="Security+ Ports and Protocols.html">Ports &amp; Protocols</a>
+        </nav>
     <div class="container">
         <div class="header">
             <h1>🛡️ CompTIA Security+ SY0-701</h1>
@@ -765,4 +791,5 @@
         displayCard();
     </script>
 </body>
+
 </html>
