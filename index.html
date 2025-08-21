@@ -1,84 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Sec + Website</title>
+  <style>
+    /* General Hacker Theme */
+    body {
+      font-family: "Courier New", monospace;
+      margin: 0;
+      background-color: #0d0d0d;
+      color: #00ff99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>My Sec + Website</title>
-     <style>
--        /* Your CSS styles go here */
-+        /* Basic page styling */
-         body {
-             font-family: Arial, sans-serif;
-             margin: 0;
--            padding: 20px;
--            background-color: #f4f4f4;
-+            background-color: #121212;
-+            color: #f9f9f9;
-+            display: flex;
-+            flex-direction: column;
-+            align-items: center;
-+            min-height: 100vh;
-+        }
-+
-+        /* Navigation bar styles */
-+        .navbar {
-+            width: 100%;
-+            display: flex;
-+            justify-content: center;
-+            gap: 20px;
-+            background: #1f1f1f;
-+            padding: 15px;
-+        }
-+
-+        .navbar a {
-+            color: white;
-+            text-decoration: none;
-+            font-weight: bold;
-         }
-+
-+        .navbar a:hover {
-+            text-decoration: underline;
-+        }
-+
-+        /* Content container */
-         .container {
-+            flex: 1;
-+            display: flex;
-+            flex-direction: column;
-+            justify-content: center;
-+            align-items: center;
-             max-width: 800px;
-+            width: 100%;
-             margin: 0 auto;
--            background: white;
-+            background: #1e1e1e;
-             padding: 20px;
-             border-radius: 8px;
-+            text-align: center;
-         }
-     </style>
- </head>
- <body>
-+    <nav class="navbar">
-+        <a href="./index.html">Home</a>
-+        <a href="Sec_plus flash cards.html">Flash Cards</a>
-+        <a href="Security+ Ports and Protocols.html">Ports &amp; Protocols</a>
-+    </nav>
-+
-     <div class="container">
-         <h1>Welcome to My Website</h1>
-         <p>This is my Sec + hosted on GitHub Pages!</p>
--        <button onclick="showMessage()">Click Me!</button>
--        <div id="message"></div>
-     </div>
- 
--    <script>
--        // Your JavaScript code goes here
--        function showMessage() {
--            document.getElementById('message').innerHTML = 
--                '<p>Hello from embedded JavaScript!</p>';
--        }
--    </script>
- </body>
- </html>
+    /* Navbar */
+    .navbar {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background: #111;
+      padding: 15px;
+      border-bottom: 2px solid #00ff99;
+    }
+
+    .navbar a {
+      color: #00ff99;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .navbar a:hover {
+      color: #fff;
+      text-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99;
+    }
+
+    /* Content Box */
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: 800px;
+      width: 90%;
+      margin: 30px auto;
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 8px;
+      border: 1px solid #00ff99;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+    }
+
+    h1 {
+      color: #00ff99;
+      text-shadow: 0 0 10px #00ff99;
+    }
+
+    p {
+      color: #cccccc;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="./index.html">Home</a>
+    <a href="Sec_plus flash cards.html">Flash Cards</a>
+    <a href="Security+ Ports and Protocols.html">Ports &amp; Protocols</a>
+  </nav>
+
+  <div class="container">
+    <h1>Welcome to My Website</h1>
+    <p>This is my Sec+ hosted on GitHub Pages!</p>
+  </div>
+</body>
+</html>
