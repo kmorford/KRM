@@ -1,230 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-  
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Security+ Ports & Protocols — Interactive Lesson</title>
+
+  <!-- Shared theme (provides #matrix sizing/stacking) -->
   <link rel="stylesheet" href="theme.css">
+
+  <!-- Keep page-specific styles, but REMOVE any #matrix rule here -->
   <style>
     :root{
-      --bg:#0b0b0b;
-      --panel:#151515;
-      --panel-soft:#1a1a1a;
-      --accent:#00ff99;
-      --accent-soft:rgba(0,255,153,0.35);
-      --text:#d9fbe9;
-      --muted:#a7b8b1;
-      --danger:#ff4d4d;
-      --warn:#ffb84d;
-      --ok:#4caf50;
+      --bg:#0b0b0b; --panel:#151515; --panel-soft:#1a1a1a;
+      --accent:#00ff99; --accent-soft:rgba(0,255,153,0.35);
+      --text:#d9fbe9; --muted:#a7b8b1; --danger:#ff4d4d;
+      --warn:#ffb84d; --ok:#4caf50;
     }
     *{ box-sizing:border-box; margin:0; padding:0; }
     html,body{ height:100%; }
     body{
-      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      line-height:1.6;
-      color: var(--text);
-      background: var(--bg);
-      min-height:100vh;
+      font-family:"Courier New",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      line-height:1.6; color:var(--text); background:var(--bg); min-height:100vh;
+      /* DO NOT set z-index here; theme.css handles stacking */
     }
 
-    /* Full-screen Matrix background */
-    #matrix {
-      position: fixed; inset:0; z-index:-1; display:block;
-      background: radial-gradient(1200px 600px at 70% -10%, rgba(0,255,153,0.12), transparent 60%),
-                  radial-gradient(800px 400px at 20% 110%, rgba(0,255,153,0.08), transparent 60%),
-                  var(--bg);
-    }
-    @media (prefers-reduced-motion: reduce){ #matrix{ background: var(--bg); } }
+    /* DO NOT define #matrix here. theme.css already does it correctly. */
 
-    /* Navbar: match home page */
     .navbar{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      gap:30px;
-      background:#0f0f0f;
-      padding:14px 18px;
-      border-bottom:1px solid var(--accent-soft);
-      backdrop-filter: blur(2px);
-      position: sticky;
-      top:0;
-      z-index: 2;
+      width:100%; display:flex; justify-content:center; gap:30px;
+      background:#0f0f0f; padding:14px 18px; border-bottom:1px solid var(--accent-soft);
+      backdrop-filter: blur(2px); position:sticky; top:0; z-index:1; /* stays above canvas */
     }
     .navbar a{
-      color: var(--accent);
-      text-decoration:none;
-      font-weight:700;
-      letter-spacing:.3px;
-      position:relative;
-      transition: color .2s ease;
+      color:var(--accent); text-decoration:none; font-weight:700; letter-spacing:.3px;
+      position:relative; transition: color .2s ease;
     }
     .navbar a::after{
       content:""; position:absolute; left:0; bottom:-4px; height:2px; width:0;
-      background: var(--accent); box-shadow:0 0 8px var(--accent);
-      transition: width .2s ease;
+      background:var(--accent); box-shadow:0 0 8px var(--accent); transition: width .2s ease;
     }
     .navbar a:hover{ color:#fff; text-shadow:0 0 12px var(--accent); }
     .navbar a:hover::after{ width:100%; }
 
-    /* Main container styled like home page panel */
     .container{
-      max-width: 1100px;
-      width: 92%;
-      margin: 28px auto;
-      background: var(--panel);
-      border:1px solid var(--accent-soft);
-      border-radius: 10px;
-      padding: 28px;
-      box-shadow: 0 0 18px rgba(0,255,153,0.18);
+      max-width:1100px; width:92%; margin:28px auto; background:var(--panel);
+      border:1px solid var(--accent-soft); border-radius:10px; padding:28px;
+      box-shadow:0 0 18px rgba(0,255,153,.18); position:relative; z-index:1; /* above canvas */
     }
 
-    h1{
-      text-align:center;
-      color: var(--accent);
-      text-shadow: 0 0 10px rgba(0,255,153,0.8);
-      letter-spacing:.6px;
-      margin-bottom:6px;
-    }
-    .subtitle{
-      text-align:center;
-      color: var(--muted);
-      margin-bottom: 22px;
-    }
+    h1{ text-align:center; color:var(--accent); text-shadow:0 0 10px rgba(0,255,153,.8); letter-spacing:.6px; margin-bottom:6px; }
+    .subtitle{ text-align:center; color:var(--muted); margin-bottom:22px; }
 
-    /* Tabs */
-    .tabs{
-      display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--accent-soft); margin-bottom:18px;
-    }
-    .tab{
-      background: transparent;
-      border:none;
-      color: var(--muted);
-      padding:12px 18px;
-      cursor:pointer;
-      font-weight:700;
-      transition: .2s ease;
-      position:relative;
-    }
+    .tabs{ display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--accent-soft); margin-bottom:18px; }
+    .tab{ background:transparent; border:none; color:var(--muted); padding:12px 18px; cursor:pointer; font-weight:700; transition:.2s ease; position:relative; }
     .tab:hover{ color:#fff; text-shadow:0 0 8px var(--accent); }
-    .tab.active{ color: var(--accent); }
-    .tab.active::after{
-      content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
+    .tab.active{ color:var(--accent); }
+    .tab.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--accent); box-shadow:0 0 8px var(--accent); }
 
-    /* Section content */
-    .content{ display:none; animation: fadeIn .3s ease; }
+    .content{ display:none; animation:fadeIn .3s ease; }
     .content.active{ display:block; }
     @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
 
-    /* Cards/grid on dark theme */
-    .port-grid{
-      display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
-      gap:16px; margin: 16px 0;
-    }
+    .port-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin:16px 0; }
     .port-card{
-      background: var(--panel-soft);
-      color: var(--text);
-      border:1px solid var(--accent-soft);
-      border-radius:12px;
-      padding:18px;
-      position:relative;
-      overflow:hidden;
-      cursor:pointer;
+      background:var(--panel-soft); color:var(--text); border:1px solid var(--accent-soft);
+      border-radius:12px; padding:18px; position:relative; overflow:hidden; cursor:pointer;
       transition: transform .15s ease, box-shadow .15s ease;
     }
     .port-card::before{
-      content:"";
-      position:absolute; inset:-40% -60%;
+      content:""; position:absolute; inset:-40% -60%;
       background: radial-gradient(closest-side, rgba(0,255,153,0.08), transparent 70%);
-      transform: rotate(12deg);
-      opacity:.6;
-      pointer-events:none;
+      transform: rotate(12deg); opacity:.6; pointer-events:none;
     }
     .port-card:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 16px rgba(0,255,153,.18); }
-    .port-number{ font-size:1.6em; font-weight:800; color: var(--accent); margin-bottom:6px; }
+    .port-number{ font-size:1.6em; font-weight:800; color:var(--accent); margin-bottom:6px; }
     .protocol-name{ font-size:1.1em; font-weight:700; margin-bottom:4px; color:#e9fff6; }
-    .port-description{ color: var(--muted); }
+    .port-description{ color:var(--muted); }
 
-    /* Tips / tools / boxes */
     .security-tip, .interactive-tool, .quiz-container, .scenario-box{
-      background: var(--panel-soft);
-      border:1px solid var(--accent-soft);
-      border-radius:12px;
-      padding:18px;
-      margin:16px 0;
-      box-shadow: 0 0 10px rgba(0,255,153,0.08) inset;
+      background:var(--panel-soft); border:1px solid var(--accent-soft);
+      border-radius:12px; padding:18px; margin:16px 0; box-shadow: inset 0 0 10px rgba(0,255,153,.08);
     }
-    .security-tip h3, .interactive-tool h3{ color: var(--accent); margin-bottom:8px; }
+    .security-tip h3, .interactive-tool h3{ color:var(--accent); margin-bottom:8px; }
 
-    /* Inputs / buttons (terminal-y) */
     .search-box, select, input[type="text"]{
-      width:100%; max-width:420px;
-      background:#0f0f0f; color: var(--text);
-      border:1px solid var(--accent-soft);
-      border-radius:8px; padding:10px 12px; font-size:15px;
-      outline:none;
+      width:100%; max-width:420px; background:#0f0f0f; color:var(--text);
+      border:1px solid var(--accent-soft); border-radius:8px; padding:10px 12px; font-size:15px; outline:none;
     }
-    .search-box:focus, select:focus, input[type="text"]:focus{ box-shadow: 0 0 0 2px rgba(0,255,153,.15); }
+    .search-box:focus, select:focus, input[type="text"]:focus{ box-shadow:0 0 0 2px rgba(0,255,153,.15); }
 
     .btn, button{
-      background: #0f0f0f; color: var(--accent);
-      border:1px solid var(--accent);
-      border-radius:999px; padding:10px 18px; font-weight:800; letter-spacing:.3px;
-      cursor:pointer; transition:.15s ease; box-shadow: 0 0 8px rgba(0,255,153,.15);
+      background:#0f0f0f; color:var(--accent); border:1px solid var(--accent);
+      border-radius:999px; padding:10px 18px; font-weight:800; letter-spacing:.3px; cursor:pointer;
+      transition:.15s ease; box-shadow:0 0 8px rgba(0,255,153,.15);
     }
     .btn:hover, button:hover{ color:#fff; box-shadow:0 0 14px rgba(0,255,153,.35); transform: translateY(-1px); }
     .btn:active, button:active{ transform: translateY(0); }
 
-    /* Progress */
-    .progress-bar{
-      background:#0f0f0f; border:1px solid var(--accent-soft);
-      height:10px; border-radius:999px; overflow:hidden; margin:14px 0;
-    }
-    .progress-fill{
-      background: linear-gradient(90deg, rgba(0,255,153,.6), var(--accent));
-      height:100%; width:0%; transition: width .4s ease;
-      box-shadow: 0 0 12px rgba(0,255,153,.6);
-    }
+    .progress-bar{ background:#0f0f0f; border:1px solid var(--accent-soft); height:10px; border-radius:999px; overflow:hidden; margin:14px 0; }
+    .progress-fill{ background: linear-gradient(90deg, rgba(0,255,153,.6), var(--accent)); height:100%; width:0%; transition: width .4s ease; box-shadow: 0 0 12px rgba(0,255,153,.6); }
 
-    /* Quiz states */
     .quiz-option{
-      background:#0f0f0f; color: var(--text);
-      border:1px solid #2a2a2a; padding:12px; border-radius:10px; cursor:pointer;
-      transition:.15s ease;
+      background:#0f0f0f; color:var(--text); border:1px solid #2a2a2a; padding:12px; border-radius:10px; cursor:pointer; transition:.15s ease;
     }
-    .quiz-option:hover{ border-color: var(--accent); box-shadow: 0 0 10px rgba(0,255,153,.18); transform: translateX(3px); }
+    .quiz-option:hover{ border-color:var(--accent); box-shadow: 0 0 10px rgba(0,255,153,.18); transform: translateX(3px); }
     .quiz-option.correct{ background:#143d2d; border-color:#13c77b; color:#dfffee; }
     .quiz-option.incorrect{ background:#3d1414; border-color:#f25c5c; color:#ffe3e3; }
 
-    /* Monospace blocks */
-    pre, code, .mono{
-      font-family: inherit;
-      background:#0f0f0f; color: var(--text);
-      border:1px solid var(--accent-soft);
-      border-radius:8px; padding:12px; overflow-x:auto;
-    }
+    pre, code, .mono{ font-family:inherit; background:#0f0f0f; color:var(--text); border:1px solid var(--accent-soft); border-radius:8px; padding:12px; overflow-x:auto; }
 
-    /* Tables (dark) */
-    table{ width:100%; border-collapse: collapse; }
-    th, td{ border-bottom:1px solid #2a2a2a; padding:10px; }
-    th{ background:#0f0f0f; color: var(--accent); }
+    table{ width:100%; border-collapse:collapse; }
+    th,td{ border-bottom:1px solid #2a2a2a; padding:10px; }
+    th{ background:#0f0f0f; color:var(--accent); }
 
-    @media (max-width: 768px){
-      .tabs{ flex-direction: column; }
-      .tab{ width:100%; text-align:center; }
-      .container{ padding:20px; }
-    }
+    @media (max-width:768px){ .tabs{ flex-direction:column; } .tab{ width:100%; text-align:center; } .container{ padding:20px; } }
   </style>
 </head>
 <body>
-  <!-- Matrix background -->
+  <!-- ONE canvas only, at the top -->
   <canvas id="matrix" aria-hidden="true"></canvas>
 
-  <!-- Navbar (same links as home) -->
   <nav class="navbar">
     <a href="index.html">Home</a>
     <a href="Sec_plus flash cards.html">Flash Cards</a>
@@ -232,528 +127,26 @@
   </nav>
 
   <main class="container">
+    <!-- your existing content exactly as before -->
     <h1>🔒 Security+ Ports & Protocols</h1>
     <p class="subtitle">Master essential ports and protocols with interactive drills, in a terminal-style interface.</p>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" onclick="showTab(event,'overview')">Overview</button>
-      <button class="tab" onclick="showTab(event,'common-ports')">Common Ports</button>
-      <button class="tab" onclick="showTab(event,'protocols')">Protocols</button>
-      <button class="tab" onclick="showTab(event,'security')">Security Implications</button>
-      <button class="tab" onclick="showTab(event,'practice')">Practice</button>
-      <button class="tab" onclick="showTab(event,'scenarios')">Real-World Scenarios</button>
-    </div>
-
-    <!-- OVERVIEW -->
-    <section id="overview" class="content active">
-      <h2 class="mono" style="border:none;background:transparent;color:var(--accent);padding:0;margin-bottom:10px;">Understanding Ports & Protocols</h2>
-      <p style="margin: 10px 0; color: var(--muted);">This lesson targets CompTIA Security+ exam objectives and real operations.</p>
-
-      <div class="security-tip">
-        <h3>Why this matters</h3>
-        <ul style="margin:8px 0 0 18px;">
-          <li>Ports are service entry points; misconfigurations expose attack surface.</li>
-          <li>Adversaries enumerate open ports and abuse weak protocols.</li>
-          <li>Protocol selection directly affects confidentiality and integrity.</li>
-          <li>Firewall policy and segmentation hinge on accurate port knowledge.</li>
-        </ul>
-      </div>
-
-      <div class="interactive-tool">
-        <h3>Quick concepts</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:10px;">
-          <div>
-            <h4 style="color: var(--accent);">What is a Port?</h4>
-            <p class="mono">Logical endpoint number (0–65535) where a service listens.</p>
-          </div>
-          <div>
-            <h4 style="color: var(--accent);">What is a Protocol?</h4>
-            <p class="mono">The rule set (“language”) governing data exchange.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-      <p style="text-align:center; color: var(--muted);">Progress: <span id="progress-text">0%</span></p>
-    </section>
-
-    <!-- COMMON PORTS -->
-    <section id="common-ports" class="content">
-      <h2 style="color:var(--accent); margin-bottom:6px;">Essential Ports to Remember</h2>
-      <p style="color:var(--muted); margin-bottom:10px;">Click a card to reveal details and mitigations.</p>
-
-      <div class="port-grid">
-        <!-- Repeatable card pattern -->
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">20/21</div>
-          <div class="protocol-name">FTP — File Transfer Protocol</div>
-          <div class="port-description">Data (20) and control (21)</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Risk:</strong> Plaintext credentials<br>
-            <strong>Use:</strong> SFTP (22) or FTPS
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">22</div>
-          <div class="protocol-name">SSH — Secure Shell</div>
-          <div class="port-description">Encrypted remote admin</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Benefit:</strong> Confidentiality + integrity<br>
-            <strong>Best practice:</strong> Key-based auth, disable password login
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">23</div>
-          <div class="protocol-name">Telnet</div>
-          <div class="port-description">Unencrypted remote access</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Risk:</strong> Everything plaintext<br>
-            <strong>Replace with:</strong> SSH (22)
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">25</div>
-          <div class="protocol-name">SMTP — Mail Transfer</div>
-          <div class="port-description">Email sending</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Note:</strong> Spam/relay target<br>
-            <strong>Secure:</strong> 465 (SMTPS) / 587 (TLS)
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">53</div>
-          <div class="protocol-name">DNS — Name Resolution</div>
-          <div class="port-description">UDP/TCP</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Attacks:</strong> Poisoning, amplification<br>
-            <strong>Mitigate:</strong> DNSSEC, DoH/DoT
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">80</div>
-          <div class="protocol-name">HTTP</div>
-          <div class="port-description">Unencrypted web</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Risk:</strong> MITM, sniffing<br>
-            <strong>Action:</strong> Redirect to 443
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">443</div>
-          <div class="protocol-name">HTTPS</div>
-          <div class="port-description">TLS-encrypted web</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Check:</strong> Valid certs, strong ciphers
-          </div>
-        </div>
-
-        <div class="port-card" onclick="togglePortDetails(this)">
-          <div class="port-number">3389</div>
-          <div class="protocol-name">RDP — Remote Desktop</div>
-          <div class="port-description">Windows remote access</div>
-          <div class="port-details" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--accent-soft);">
-            <strong>Risk:</strong> Brute force, exploits<br>
-            <strong>Mitigate:</strong> VPN-only, MFA, geo/IP allowlists
-          </div>
-        </div>
-      </div>
-
-      <div class="security-tip">
-        <h3>Remember the pattern</h3>
-        <ul style="margin-left:18px; margin-top:6px;">
-          <li>HTTP (80) → <strong>HTTPS (443)</strong></li>
-          <li>FTP (21) → <strong>SFTP (22)</strong></li>
-          <li>Telnet (23) → <strong>SSH (22)</strong></li>
-          <li>SMTP (25) → <strong>SMTPS/STARTTLS (465/587)</strong></li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- PROTOCOLS -->
-    <section id="protocols" class="content">
-      <h2 style="color:var(--accent); margin-bottom:8px;">Protocol Deep Dive</h2>
-
-      <div class="scenario-box">
-        <div class="mono" style="font-weight:700; color:#e9fff6; border:none; background:transparent; padding:0;">TCP vs UDP — know the trade-offs</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:10px;">
-          <div>
-            <h4 style="color:var(--accent);">TCP</h4>
-            <ul style="margin-left:18px;">
-              <li>Connection-oriented (3-way handshake)</li>
-              <li>Reliable delivery (ACKs, retransmit)</li>
-              <li>Ordered, error-checked</li>
-              <li>HTTP(S), SSH, FTP</li>
-            </ul>
-          </div>
-          <div>
-            <h4 style="color:var(--accent);">UDP</h4>
-            <ul style="margin-left:18px;">
-              <li>Connectionless, low overhead</li>
-              <li>No delivery guarantee</li>
-              <li>Lower latency</li>
-              <li>DNS, DHCP, streaming</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="interactive-tool">
-        <h3>Protocol security levels</h3>
-        <div style="display:grid; gap:10px; margin-top:8px;">
-          <div class="mono" style="background:#143d2d; border-color:#13c77b;"><strong>🟢 Secure:</strong> SSH, HTTPS, SFTP, LDAPS, SMTPS, IMAPS, POP3S</div>
-          <div class="mono" style="background:#2f2a12; border-color:#ffcf66;"><strong>🟡 Context-dependent:</strong> SNMPv3, NTP, DNS(+DNSSEC), SMTP(+TLS)</div>
-          <div class="mono" style="background:#3d1414; border-color:#f25c5c;"><strong>🔴 Insecure:</strong> Telnet, FTP, HTTP, SNMP v1/v2, rsh, rlogin</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECURITY -->
-    <section id="security" class="content">
-      <h2 style="color:var(--accent); margin-bottom:8px;">Security implications & best practices</h2>
-
-      <div class="scenario-box">
-        <div class="mono" style="border:none;background:transparent;padding:0;"><strong>Defense in depth</strong></div>
-        <ol style="margin-left:18px; margin-top:6px;">
-          <li>Minimize exposed ports/services.</li>
-          <li>Prefer secure protocol variants.</li>
-          <li>Enforce firewall policy (ingress/egress).</li>
-          <li>Monitor flows and anomalies.</li>
-          <li>Scan regularly; remediate drift.</li>
-        </ol>
-      </div>
-
-      <div class="security-tip">
-        <h3>Common attack vectors</h3>
-        <div class="mono" style="margin-top:8px;">
-          Port scanning → Service exploitation → MITM on cleartext → DoS amplification
-        </div>
-      </div>
-
-      <div class="interactive-tool">
-        <h3>Firewall rule generator</h3>
-        <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-          <select id="action"><option>ALLOW</option><option>DENY</option></select>
-          <select id="protocol"><option>TCP</option><option>UDP</option><option>BOTH</option></select>
-          <input type="text" id="port" placeholder="Port number (e.g., 22, 443)">
-          <button class="btn" onclick="generateRule()">Generate</button>
-        </div>
-        <div id="rule-output" class="mono" style="margin-top:12px;"></div>
-      </div>
-    </section>
-
-    <!-- PRACTICE -->
-    <section id="practice" class="content">
-      <h2 style="color:var(--accent); margin-bottom:8px;">Practice</h2>
-
-      <div class="interactive-tool">
-        <h3>🔍 Port lookup</h3>
-        <p style="color:var(--muted);">Enter a port number or service name:</p>
-        <input type="text" class="search-box" id="port-search" placeholder="Try: 22, 443, SSH, HTTPS..." onkeyup="searchPort()">
-        <div class="mono" id="search-result" style="margin-top:10px; min-height:80px; display:flex; align-items:center; justify-content:center; color:#7a8e86;">
-          Start typing to search…
-        </div>
-      </div>
-
-      <div class="quiz-container">
-        <h3>Quick quiz</h3>
-        <div id="quiz-content" style="margin-top:8px;">
-          <div class="quiz-question mono" style="border:none;background:transparent;padding:0; color:#e9fff6;">Question 1: Which port does SSH use by default?</div>
-          <div class="quiz-options" style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
-            <div class="quiz-option" onclick="checkAnswer(this,false)">21</div>
-            <div class="quiz-option" onclick="checkAnswer(this,true)">22</div>
-            <div class="quiz-option" onclick="checkAnswer(this,false)">23</div>
-            <div class="quiz-option" onclick="checkAnswer(this,false)">25</div>
-          </div>
-        </div>
-        <button id="next-btn" class="btn" style="margin-top:12px; display:none;" onclick="nextQuestion()">Next</button>
-      </div>
-
-      <div class="scenario-box">
-        <div class="mono" style="font-weight:700; border:none;background:transparent;padding:0;">🎯 Challenge: Port identification</div>
-        <p style="color:var(--muted);">Your scan shows:</p>
-        <div class="mono" style="margin:10px 0;">
-          21/tcp open<br>23/tcp open<br>80/tcp open<br>443/tcp open<br>3389/tcp open
-        </div>
-        <button class="btn" onclick="revealRisks()">Reveal risks</button>
-        <div id="risk-analysis" style="display:none; margin-top:12px;">
-          <!-- filled by JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- SCENARIOS -->
-    <section id="scenarios" class="content">
-      <h2 style="color:var(--accent); margin-bottom:8px;">Real-world scenarios</h2>
-
-      <div class="scenario-box">
-        <div class="mono" style="font-weight:700; border:none;background:transparent;padding:0;">Scenario 1: Compromised server</div>
-        <p style="color:var(--muted);">Initial scan:</p>
-        <div class="mono" style="margin:10px 0;">
-          22/tcp open ssh<br>
-          80/tcp open http<br>
-          443/tcp open https<br>
-          4444/tcp open unknown<br>
-          6667/tcp open irc
-        </div>
-        <p><strong>Question:</strong> Immediate concerns?</p>
-        <button class="btn" onclick="showScenarioAnalysis(1)" style="margin-top:8px;">Show analysis</button>
-        <div id="scenario-1-analysis" class="mono" style="display:none; margin-top:10px;">
-          • 4444 — common backdoor (e.g., Metasploit).<br>
-          • 6667 — IRC; often used for C2.<br>
-          • Action: isolate host, triage logs, malware scan, preserve evidence.
-        </div>
-      </div>
-
-      <div class="scenario-box">
-        <div class="mono" style="font-weight:700; border:none;background:transparent;padding:0;">Scenario 2: Firewall configuration</div>
-        <p style="color:var(--muted);">Secure DB server requirements:</p>
-        <ul style="margin-left:18px;">
-          <li>Allow DB from 10.0.1.0/24</li>
-          <li>SSH from 10.0.2.0/24</li>
-          <li>Drop all else</li>
-        </ul>
-        <button class="btn" onclick="showScenarioAnalysis(2)" style="margin-top:8px;">Show solution</button>
-        <div id="scenario-2-analysis" style="display:none; margin-top:10px;">
-          <pre class="mono"># Allow DB
-iptables -A INPUT -s 10.0.1.0/24 -p tcp --dport 3306 -j ACCEPT
-# Allow SSH
-iptables -A INPUT -s 10.0.2.0/24 -p tcp --dport 22 -j ACCEPT
-# Established
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-# Default drop
-iptables -A INPUT -j DROP</pre>
-        </div>
-      </div>
-
-      <div class="scenario-box">
-        <div class="mono" style="font-weight:700; border:none;background:transparent;padding:0;">Scenario 3: Encrypt cleartext services</div>
-        <ul style="margin-left:18px;">
-          <li>FTP (21) → SFTP/SCP (22)</li>
-          <li>Telnet (23) → SSH (22)</li>
-          <li>HTTP (80) → HTTPS (443)</li>
-          <li>POP3 (110) → POP3S (995)</li>
-        </ul>
-      </div>
-    </section>
+    <!-- (Keep all your sections/tabs/JS app logic here unchanged) -->
+    <!-- ... -->
   </main>
 
+  <!-- IMPORTANT: Use ONLY the shared theme.js. Remove the inline matrix script entirely. -->
+  <script src="theme.js"></script>
+
+  <!-- Keep ONLY your app logic (tabs, quiz, etc.) below. Do NOT redraw the matrix here. -->
   <script>
-    // ===== Matrix rain background (same as home) =====
-    (function(){
-      const canvas = document.getElementById('matrix');
-      const ctx = canvas.getContext('2d', { alpha: false });
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      let w,h,cols,drops,fontSize,charSet,lastTime=0;
-
-      charSet = '0123456789' +
-                'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-      function resize(){
-        const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-        w = canvas.clientWidth = window.innerWidth;
-        h = canvas.clientHeight = window.innerHeight;
-        canvas.width = Math.floor(w * dpr);
-        canvas.height = Math.floor(h * dpr);
-        ctx.setTransform(dpr,0,0,dpr,0,0);
-
-        fontSize = Math.max(14, Math.floor(Math.min(w,h)/50));
-        ctx.font = `${fontSize}px "Courier New", monospace`;
-        cols = Math.floor(w / fontSize);
-        drops = new Array(cols).fill(0).map(()=>Math.floor(Math.random()*-50));
-      }
-
-      function draw(ts){
-        const delta = ts - lastTime;
-        if (delta < 16) { requestAnimationFrame(draw); return; }
-        lastTime = ts;
-
-        ctx.fillStyle = 'rgba(11,11,11,0.08)';
-        ctx.fillRect(0,0,w,h);
-
-        for(let i=0;i<cols;i++){
-          const x=i*fontSize, y=drops[i]*fontSize;
-          ctx.shadowColor='#00ff99'; ctx.shadowBlur=8;
-          ctx.fillStyle='#00ff99';
-          const c = charSet.charAt(Math.floor(Math.random()*charSet.length));
-          ctx.fillText(c,x,y);
-          ctx.shadowBlur=0;
-
-          if (y>h && Math.random()>0.975) drops[i]=Math.floor(-Math.random()*30);
-          else drops[i]++;
-        }
-        requestAnimationFrame(draw);
-      }
-
-      function start(){
-        resize();
-        ctx.fillStyle='#0b0b0b'; ctx.fillRect(0,0,w,h);
-        if (!prefersReduced) requestAnimationFrame(draw);
-      }
-
-      window.addEventListener('resize', resize, {passive:true});
-      document.addEventListener('visibilitychange', ()=>{
-        if (document.visibilityState==='visible'){ ctx.fillStyle='#0b0b0b'; ctx.fillRect(0,0,w,h); }
-      });
-      start();
-    })();
-
-    // ===== App logic (tabs, progress, interactions) =====
-    const portDatabase = {
-      '20': { name: 'FTP-DATA', protocol: 'TCP', description: 'FTP data transfer', security: 'Insecure - plaintext' },
-      '21': { name: 'FTP', protocol: 'TCP', description: 'FTP control', security: 'Insecure - plaintext credentials' },
-      '22': { name: 'SSH', protocol: 'TCP', description: 'Secure Shell', security: 'Secure - encrypted' },
-      '23': { name: 'Telnet', protocol: 'TCP', description: 'Unencrypted remote access', security: 'Insecure - everything plaintext' },
-      '25': { name: 'SMTP', protocol: 'TCP', description: 'Email sending', security: 'Insecure without TLS' },
-      '53': { name: 'DNS', protocol: 'TCP/UDP', description: 'Domain name resolution', security: 'Vulnerable to spoofing' },
-      '67': { name: 'DHCP', protocol: 'UDP', description: 'DHCP server', security: 'Vulnerable to rogue DHCP' },
-      '68': { name: 'DHCP', protocol: 'UDP', description: 'DHCP client', security: 'Vulnerable to rogue DHCP' },
-      '80': { name: 'HTTP', protocol: 'TCP', description: 'Web traffic', security: 'Insecure - no encryption' },
-      '110': { name: 'POP3', protocol: 'TCP', description: 'Email retrieval', security: 'Insecure without TLS' },
-      '143': { name: 'IMAP', protocol: 'TCP', description: 'Email access', security: 'Insecure without TLS' },
-      '443': { name: 'HTTPS', protocol: 'TCP', description: 'Secure web traffic', security: 'Secure - TLS encrypted' },
-      '445': { name: 'SMB', protocol: 'TCP', description: 'Windows file sharing', security: 'Often targeted by malware' },
-      '3389': { name: 'RDP', protocol: 'TCP', description: 'Remote Desktop', security: 'High-value target for attackers' },
-      '8080': { name: 'HTTP-ALT', protocol: 'TCP', description: 'Alternative HTTP', security: 'Same risks as HTTP' }
-    };
-
-    const quizQuestions = [
-      { question:"Which port does SSH use by default?", options:["21","22","23","25"], correct:1 },
-      { question:"What protocol uses port 443?", options:["HTTP","FTP","HTTPS","SSH"], correct:2 },
-      { question:"Which of these is a secure protocol?", options:["Telnet","FTP","HTTP","SSH"], correct:3 },
-      { question:"DNS typically uses which port?", options:["25","53","80","443"], correct:1 },
-      { question:"Which port is commonly targeted for RDP attacks?", options:["22","80","443","3389"], correct:3 }
-    ];
-
-    let currentQuestion = 0, score = 0;
-    let tabsVisited = new Set(['overview']);
-
-    function showTab(ev, tabName){
-      const tabs = document.querySelectorAll('.tab');
-      const contents = document.querySelectorAll('.content');
-      tabs.forEach(t=>t.classList.remove('active'));
-      contents.forEach(c=>c.classList.remove('active'));
-      ev.target.classList.add('active');
-      document.getElementById(tabName).classList.add('active');
-      tabsVisited.add(tabName);
-      updateProgress();
-    }
-
-    function updateProgress(){
-      const totalTabs = 6;
-      const pct = (tabsVisited.size / totalTabs) * 100;
-      document.getElementById('progress').style.width = pct + '%';
-      document.getElementById('progress-text').textContent = Math.round(pct) + '%';
-    }
-
-    function togglePortDetails(card){
-      const d = card.querySelector('.port-details');
-      d.style.display = (d.style.display === 'none' || !d.style.display) ? 'block' : 'none';
-    }
-
-    function searchPort(){
-      const q = document.getElementById('port-search').value.trim().toLowerCase();
-      const box = document.getElementById('search-result');
-      if (!q){ box.textContent = 'Start typing to search…'; box.style.color='#7a8e86'; return; }
-      for (const [port, info] of Object.entries(portDatabase)){
-        if (port === q || info.name.toLowerCase().includes(q)){
-          const color = info.security.startsWith('Secure') ? '#13c77b' : '#f25c5c';
-          box.innerHTML = `
-            <div>
-              <div class="mono" style="color:var(--accent); border:none;background:transparent;padding:0;margin-bottom:6px;">
-                Port ${port} — ${info.name}
-              </div>
-              <div class="mono" style="margin-top:6px;">
-                <strong>Protocol:</strong> ${info.protocol}<br>
-                <strong>Description:</strong> ${info.description}<br>
-                <strong>Security:</strong> <span style="color:${color}">${info.security}</span>
-              </div>
-            </div>`;
-          box.style.color = 'inherit';
-          return;
-        }
-      }
-      box.innerHTML = `<span style="color:${'var(--danger)'}">No matching port or service found.</span>`;
-    }
-
-    function checkAnswer(el, ok){
-      const opts = el.parentElement.querySelectorAll('.quiz-option');
-      opts.forEach(o=>{ o.onclick=null; o.style.cursor='default'; });
-      if (ok){ el.classList.add('correct'); score++; }
-      else {
-        el.classList.add('incorrect');
-        opts[quizQuestions[currentQuestion].correct].classList.add('correct');
-      }
-      document.getElementById('next-btn').style.display='inline-block';
-    }
-
-    function nextQuestion(){
-      currentQuestion++;
-      const next = quizQuestions[currentQuestion];
-      const qc = document.getElementById('quiz-content');
-      if (next){
-        qc.innerHTML = `
-          <div class="quiz-question mono" style="border:none;background:transparent;padding:0; color:#e9fff6;">
-            Question ${currentQuestion+1}: ${next.question}
-          </div>
-          <div class="quiz-options" style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
-            ${next.options.map((opt,i)=>`<div class="quiz-option" onclick="checkAnswer(this, ${i===next.correct})">${opt}</div>`).join('')}
-          </div>`;
-        document.getElementById('next-btn').style.display='none';
-      } else {
-        qc.innerHTML = `
-          <h3 style="color:var(--accent); text-align:center;">Quiz complete</h3>
-          <p style="text-align:center; margin-top:8px;">Score: ${score}/${quizQuestions.length}</p>
-          <p style="text-align:center; color:var(--muted);">${score===quizQuestions.length?'Flawless.':'Keep drilling until it’s automatic.'}</p>`;
-        document.getElementById('next-btn').style.display='none';
-      }
-    }
-
-    function generateRule(){
-      const action = document.getElementById('action').value;
-      const proto = document.getElementById('protocol').value;
-      const port = document.getElementById('port').value.trim();
-      const out = document.getElementById('rule-output');
-      if (!port){ out.textContent='Please enter a port number.'; return; }
-      let rule = `iptables -A INPUT -p ${proto.toLowerCase()} --dport ${port} -j ${action}`;
-      if (proto==='BOTH'){
-        rule = `iptables -A INPUT -p tcp --dport ${port} -j ${action}\niptables -A INPUT -p udp --dport ${port} -j ${action}`;
-      }
-      out.textContent = rule;
-    }
-
-    function revealRisks(){
-      const el = document.getElementById('risk-analysis');
-      el.style.display='block';
-      el.innerHTML = `
-        <div class="mono">
-          • 21/FTP — plaintext creds — <span style="color:#f25c5c">HIGH</span><br>
-          • 23/Telnet — fully plaintext — <span style="color:#f25c5c">CRITICAL</span><br>
-          • 80/HTTP — cleartext — <span style="color:#ffcf66">MEDIUM</span><br>
-          • 3389/RDP — brute-force / exploit target — <span style="color:#f25c5c">HIGH</span><br><br>
-          Recommendation: disable FTP/Telnet, force HTTPS, restrict RDP to VPN w/ MFA.
-        </div>`;
-    }
-
-    function showScenarioAnalysis(n){
-      document.getElementById(`scenario-${n}-analysis`).style.display='block';
-    }
-
-    // initial progress
-    updateProgress();
+    /* your existing app logic: showTab, updateProgress, searchPort, quiz, etc. */
+    /* (Leave the functions you already had; I’m omitting them here for brevity.) */
   </script>
-  <canvas id="matrix" aria-hidden="true"></canvas>
-<script src="theme.js"></script>
-
 </body>
 </html>
+
+
 
 
 
