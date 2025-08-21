@@ -1,50 +1,96 @@
-(function(){
-  const canvas = document.getElementById('matrix');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d', { alpha:false });
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ===== General Hacker Theme ===== */
+body {
+  font-family: "Courier New", monospace;
+  margin: 0;
+  background-color: #0d0d0d;
+  color: #00ff99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  position: relative; /* ensures stacking for content above canvas */
+}
 
-  let w,h,cols,drops,fontSize,last=0;
-  // Numbers + symbols for hacker vibe
-  const chars = "0123456789#$%&@";
+/* ===== Matrix Background Canvas ===== */
+#matrix {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;              /* sits behind content */
+  pointer-events: none;    /* don't block clicks/scroll */
+  display: block;
 
-  function resize(){
-    const dpr = Math.max(1, Math.min(window.devicePixelRatio||1, 2));
-    w = canvas.clientWidth = innerWidth;
-    h = canvas.clientHeight = innerHeight;
-    canvas.width = Math.floor(w*dpr);
-    canvas.height = Math.floor(h*dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    fontSize = Math.max(14, Math.floor(Math.min(w,h)/50));
-    ctx.font = `${fontSize}px "Courier New", monospace`;
-    cols = Math.floor(w/fontSize);
-    drops = new Array(cols).fill(0).map(()=>Math.floor(Math.random()*-50));
-  }
-  function draw(ts){
-    if (ts-last<16){ requestAnimationFrame(draw); return; }
-    last=ts;
-    ctx.fillStyle='rgba(11,11,11,.08)'; ctx.fillRect(0,0,w,h);
-    ctx.shadowColor='#00ff99'; ctx.fillStyle='#00ff99';
-    for(let i=0;i<cols;i++){
-      const x=i*fontSize, y=drops[i]*fontSize;
-      ctx.shadowBlur=8;
-      ctx.fillText(chars[Math.floor(Math.random()*chars.length)], x,y);
-      ctx.shadowBlur=0;
-      if(y>h && Math.random()>0.975) drops[i]=Math.floor(-Math.random()*30);
-      else drops[i]++;
-    }
-    requestAnimationFrame(draw);
-  }
-  function start(){
-    resize();
-    ctx.fillStyle='#0b0b0b'; ctx.fillRect(0,0,w,h);
-    if(!prefersReduced) requestAnimationFrame(draw);
-  }
-  addEventListener('resize', resize, {passive:true});
-  document.addEventListener('visibilitychange', ()=>{
-    if(document.visibilityState==='visible'){
-      ctx.fillStyle='#0b0b0b'; ctx.fillRect(0,0,w,h);
-    }
-  });
-  start();
-})();
+  background: radial-gradient(1200px 600px at 70% -10%, rgba(0,255,153,0.12), transparent 60%),
+             radial-gradient(800px 400px at 20% 110%, rgba(0,255,153,0.08), transparent 60%),
+             #0b0b0b;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  background: #111;
+  padding: 15px;
+  border-bottom: 2px solid #00ff99;
+  position: relative;
+  z-index: 1; /* stays above matrix canvas */
+}
+
+.navbar a {
+  color: #00ff99;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.navbar a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99;
+}
+
+/* ===== Content Container ===== */
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 800px;
+  width: 90%;
+  margin: 30px auto;
+  background: #1a1a1a;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid #00ff99;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+  position: relative;
+  z-index: 1; /* above canvas */
+}
+
+h1 {
+  color: #00ff99;
+  text-shadow: 0 0 10px #00ff99;
+}
+
+.subtitle {
+  color: #cccccc;
+}
+
+.mono {
+  font-family: "Courier New", monospace;
+  color: #00ff99;
+}
+
+.panel {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px dashed #00ff99;
+  border-radius: 6px;
+  background: rgba(0, 255, 153, 0.05);
+}
+
