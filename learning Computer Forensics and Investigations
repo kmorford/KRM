@@ -1,0 +1,352 @@
+import React, { useState } from 'react';
+import { Shield, Search, FileText, Network, Database, Lock, Check, X, Award, ArrowRight } from 'lucide-react';
+
+const ForensicsGame = () => {
+  const [currentStage, setCurrentStage] = useState('intro');
+  const [score, setScore] = useState(0);
+  const [completedChallenges, setCompletedChallenges] = useState([]);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const challenges = [
+    {
+      id: 'file-recovery',
+      icon: FileText,
+      title: 'File Recovery Analysis',
+      description: 'A suspicious file was deleted from the suspect\'s computer. Analyze the file metadata.',
+      scenario: 'You\'ve recovered a deleted file named "project_data.xlsx". The file properties show:\n\n• Created: Jan 15, 2025, 9:30 AM\n• Modified: Jan 18, 2025, 11:45 PM\n• Deleted: Jan 19, 2025, 12:02 AM\n• File Size: 2.4 MB\n\nWhat is the most significant finding?',
+      question: 'What does this timeline suggest about the suspect\'s behavior?',
+      options: [
+        { text: 'The file was modified late at night just before deletion, suggesting intentional evidence destruction', correct: true },
+        { text: 'The file was too large to be important', correct: false },
+        { text: 'The creation date proves the suspect is guilty', correct: false },
+        { text: 'Nothing suspicious - people delete files all the time', correct: false }
+      ],
+      explanation: 'Correct! The late-night modification followed by immediate deletion within 17 minutes is a red flag. This pattern often indicates someone was working on sensitive data and then tried to cover their tracks. Forensic investigators always look for temporal proximity between file access and deletion attempts.',
+      wrongExplanation: 'The key is the temporal relationship: the file was modified at 11:45 PM and deleted just 17 minutes later. This suspicious pattern suggests deliberate evidence destruction rather than routine file management.'
+    },
+    {
+      id: 'log-analysis',
+      icon: Database,
+      title: 'System Log Forensics',
+      description: 'Examine authentication logs to identify unauthorized access.',
+      scenario: 'System logs show the following login attempts:\n\n10:15 AM - User: admin - Status: SUCCESS\n10:45 AM - User: admin - Status: SUCCESS\n02:30 AM - User: admin - Status: SUCCESS (Remote IP: 185.220.101.42)\n02:31 AM - User: backup_admin - Status: FAILED\n02:32 AM - User: backup_admin - Status: FAILED\n02:35 AM - User: backup_admin - Status: SUCCESS',
+      question: 'Which activity is most indicative of a security breach?',
+      options: [
+        { text: 'The 2:30 AM login from an unusual IP address, followed by failed then successful backup_admin attempts', correct: true },
+        { text: 'Multiple successful admin logins during the day', correct: false },
+        { text: 'The failed login attempts only', correct: false },
+        { text: 'All remote access should be considered suspicious', correct: false }
+      ],
+      explanation: 'Excellent analysis! The 2:30 AM login from an unfamiliar IP is already suspicious (off-hours access). The subsequent failed attempts on backup_admin followed by success indicate a privilege escalation attack. The attacker likely gained admin access first, then attempted to obtain backup_admin privileges through brute force or credential stuffing.',
+      wrongExplanation: 'Focus on the anomalous pattern: late-night access from an unknown IP, followed by multiple failed login attempts and eventual success on a different privileged account. This sequence suggests an attack progression.'
+    },
+    {
+      id: 'network-forensics',
+      icon: Network,
+      title: 'Network Traffic Analysis',
+      description: 'Analyze network packets to identify data exfiltration.',
+      scenario: 'Packet capture shows:\n\n• 500 MB uploaded to cloud-storage.example.com\n• Connection time: 3:00 AM - 3:45 AM\n• Protocol: HTTPS (encrypted)\n• User agent: Python-requests/2.28\n• Source: Internal workstation (192.168.1.45)',
+      question: 'What is the strongest indicator of malicious data exfiltration?',
+      options: [
+        { text: 'The Python-requests user agent during off-hours suggests automated data theft via script', correct: true },
+        { text: 'HTTPS encryption always indicates malicious activity', correct: false },
+        { text: 'Cloud storage uploads are automatically suspicious', correct: false },
+        { text: 'The file size is too small to be concerning', correct: false }
+      ],
+      explanation: 'Perfect! While HTTPS and cloud storage are legitimate tools, the Python-requests user agent reveals this wasn\'t a normal user uploading files through a browser. This is a programmatic upload, likely a script designed to exfiltrate data. Combined with the 3 AM timing and large volume, this strongly suggests automated data theft. Forensic investigators always examine user agents and automated tool signatures.',
+      wrongExplanation: 'The critical clue is the "Python-requests" user agent. This indicates a script, not a human using a browser, was uploading data at 3 AM. This automation combined with the timing is the strongest evidence of intentional data exfiltration.'
+    },
+    {
+      id: 'email-forensics',
+      icon: Search,
+      title: 'Email Header Analysis',
+      description: 'Investigate email headers to trace the origin of a phishing attack.',
+      scenario: 'Email header analysis reveals:\n\nFrom: ceo@company.com\nReply-To: ceo-assistant@temporary-mail.xyz\nReceived: from mail.suspicious-server.ru [203.0.113.45]\nSPF: FAIL\nDKIM: FAIL\nSubject: Urgent: Update Your Banking Details',
+      question: 'Which finding most definitively proves this is a spoofed phishing email?',
+      options: [
+        { text: 'The SPF and DKIM failures, plus the mismatch between "From" and "Reply-To" domains', correct: true },
+        { text: 'The word "Urgent" in the subject line', correct: false },
+        { text: 'Email from Russia is always malicious', correct: false },
+        { text: 'The Reply-To address alone', correct: false }
+      ],
+      explanation: 'Excellent forensic analysis! SPF (Sender Policy Framework) and DKIM (DomainKeys Identified Mail) are authentication mechanisms. Both failing means the sending server isn\'t authorized by company.com. Additionally, the "From" address shows company.com but "Reply-To" points to a suspicious temporary mail service. This triple failure (SPF, DKIM, and domain mismatch) is definitive proof of email spoofing used in phishing attacks.',
+      wrongExplanation: 'While other factors are suspicious, only the combination of SPF/DKIM failures provides cryptographic proof that the email wasn\'t sent from the claimed domain. This technical authentication failure is irrefutable evidence of spoofing.'
+    },
+    {
+      id: 'chain-of-custody',
+      icon: Lock,
+      title: 'Chain of Custody',
+      description: 'Ensure evidence integrity for legal admissibility.',
+      scenario: 'You\'ve seized a laptop as evidence. Documentation shows:\n\n• Drive imaged using write-blocker: YES\n• Hash verification (MD5): abc123...\n• Hash verification (SHA-256): def456...\n• Documentation includes: date, time, investigator signature\n• Original drive stored in evidence locker\n• Working copy created from image',
+      question: 'What is the most critical element for maintaining chain of custody?',
+      options: [
+        { text: 'The cryptographic hash values that prove the evidence copy is identical to the original', correct: true },
+        { text: 'Storing the original drive in a locked room', correct: false },
+        { text: 'Having investigator signatures on documents', correct: false },
+        { text: 'Using expensive forensic equipment', correct: false }
+      ],
+      explanation: 'Perfect understanding! Cryptographic hashes (like SHA-256) create a unique "fingerprint" of the data. By hashing the original and all copies, you can mathematically prove that evidence hasn\'t been altered - even a single bit change would produce a completely different hash. This forensic technique ensures evidence integrity and is crucial for legal admissibility. Without hash verification, defense attorneys can challenge evidence authenticity.',
+      wrongExplanation: 'While physical security and documentation are important, only cryptographic hashing provides mathematical proof that evidence is unchanged. This is the gold standard for evidence integrity in digital forensics and courts of law.'
+    }
+  ];
+
+  const getCurrentChallenge = () => {
+    return challenges.find(c => c.id === currentStage);
+  };
+
+  const handleAnswerSelect = (option) => {
+    setSelectedAnswer(option);
+    setShowFeedback(true);
+    
+    if (option.correct && !completedChallenges.includes(currentStage)) {
+      setScore(score + 20);
+      setCompletedChallenges([...completedChallenges, currentStage]);
+    }
+  };
+
+  const handleNext = () => {
+    const currentIndex = challenges.findIndex(c => c.id === currentStage);
+    if (currentIndex < challenges.length - 1) {
+      setCurrentStage(challenges[currentIndex + 1].id);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      setCurrentStage('complete');
+    }
+  };
+
+  const resetGame = () => {
+    setCurrentStage('intro');
+    setScore(0);
+    setCompletedChallenges([]);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+  };
+
+  if (currentStage === 'intro') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-6">
+              <Shield className="w-24 h-24 text-blue-400 animate-pulse" />
+            </div>
+            <h1 className="text-5xl font-bold text-white mb-4">CyberDetective</h1>
+            <p className="text-xl text-blue-200">Computer Forensics & Investigation Training</p>
+          </div>
+
+          <div className="bg-slate-800/50 backdrop-blur rounded-lg p-8 border border-blue-500/30 mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4">The Case</h2>
+            <p className="text-gray-300 mb-4">
+              DataCorp Industries has experienced a serious data breach. Sensitive customer information has been leaked online, 
+              and internal investigation suggests an insider threat. As the lead forensic investigator, you must analyze digital 
+              evidence to identify the perpetrator and understand how the breach occurred.
+            </p>
+            <p className="text-gray-300">
+              Work through five forensic analysis challenges, applying real-world investigation techniques to solve the case.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            {challenges.map((challenge) => {
+              const Icon = challenge.icon;
+              return (
+                <div key={challenge.id} className="bg-slate-800/30 rounded-lg p-4 border border-slate-700">
+                  <div className="flex items-start gap-3">
+                    <Icon className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">{challenge.title}</h3>
+                      <p className="text-sm text-gray-400">{challenge.description}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setCurrentStage(challenges[0].id)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+          >
+            Begin Investigation
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStage === 'complete') {
+    const percentage = (score / 100) * 100;
+    const grade = percentage >= 80 ? 'Expert' : percentage >= 60 ? 'Proficient' : percentage >= 40 ? 'Competent' : 'Novice';
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <Award className="w-24 h-24 text-yellow-400 mx-auto mb-6 animate-bounce" />
+            <h1 className="text-4xl font-bold text-white mb-4">Case Closed!</h1>
+            <p className="text-xl text-blue-200 mb-8">Investigation Complete</p>
+            
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-8 border border-blue-500/30 mb-8">
+              <div className="text-6xl font-bold text-white mb-4">{score}/100</div>
+              <div className="text-2xl text-blue-400 mb-6">Forensic Skill Level: {grade}</div>
+              
+              <div className="w-full bg-slate-700 rounded-full h-4 mb-8">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-green-500 h-4 rounded-full transition-all duration-1000"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+
+              <div className="text-left text-gray-300 space-y-4">
+                <p className="font-semibold text-white">What You Learned:</p>
+                <ul className="space-y-2">
+                  <li>• File metadata analysis and timeline reconstruction</li>
+                  <li>• System log interpretation and anomaly detection</li>
+                  <li>• Network traffic analysis and data exfiltration patterns</li>
+                  <li>• Email header forensics and authentication protocols</li>
+                  <li>• Evidence handling and chain of custody procedures</li>
+                </ul>
+                
+                <div className="mt-6 p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">
+                  <p className="text-sm text-blue-200">
+                    <strong>Case Summary:</strong> Through your analysis, you've identified that an insider used their 
+                    admin credentials to access the system during off-hours, modified sensitive files, and exfiltrated 
+                    data using automated scripts. The evidence you collected, properly documented with chain of custody 
+                    procedures, is now admissible in court.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={resetGame}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg transition-all"
+            >
+              Investigate Another Case
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const challenge = getCurrentChallenge();
+  const Icon = challenge.icon;
+  const currentIndex = challenges.findIndex(c => c.id === currentStage);
+  const progress = ((currentIndex + 1) / challenges.length) * 100;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-3">
+            <Shield className="w-8 h-8 text-blue-400" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">CyberDetective</h1>
+              <p className="text-sm text-blue-300">Score: {score}/100</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-400">Challenge {currentIndex + 1} of {challenges.length}</p>
+            <div className="w-48 bg-slate-700 rounded-full h-2 mt-1">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Challenge Card */}
+        <div className="bg-slate-800/50 backdrop-blur rounded-lg border border-blue-500/30 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6">
+            <div className="flex items-center gap-4">
+              <Icon className="w-12 h-12 text-white" />
+              <div>
+                <h2 className="text-2xl font-bold text-white">{challenge.title}</h2>
+                <p className="text-blue-100">{challenge.description}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8">
+            {/* Scenario */}
+            <div className="bg-slate-900/50 rounded-lg p-6 mb-6 border border-slate-700">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Evidence Analysis
+              </h3>
+              <pre className="text-gray-300 font-mono text-sm whitespace-pre-wrap">{challenge.scenario}</pre>
+            </div>
+
+            {/* Question */}
+            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
+
+            {/* Options */}
+            <div className="space-y-3 mb-6">
+              {challenge.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => !showFeedback && handleAnswerSelect(option)}
+                  disabled={showFeedback}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    !showFeedback
+                      ? 'border-slate-600 bg-slate-800/30 hover:border-blue-500 hover:bg-slate-800/50'
+                      : selectedAnswer === option
+                      ? option.correct
+                        ? 'border-green-500 bg-green-900/30'
+                        : 'border-red-500 bg-red-900/30'
+                      : option.correct && showFeedback
+                      ? 'border-green-500 bg-green-900/20'
+                      : 'border-slate-700 bg-slate-800/20 opacity-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-white">{option.text}</span>
+                    {showFeedback && selectedAnswer === option && (
+                      option.correct ? <Check className="w-6 h-6 text-green-400" /> : <X className="w-6 h-6 text-red-400" />
+                    )}
+                    {showFeedback && option.correct && selectedAnswer !== option && (
+                      <Check className="w-6 h-6 text-green-400" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Feedback */}
+            {showFeedback && (
+              <div className={`rounded-lg p-6 mb-6 ${
+                selectedAnswer.correct ? 'bg-green-900/30 border border-green-500/50' : 'bg-red-900/30 border border-red-500/50'
+              }`}>
+                <h4 className={`font-bold mb-2 ${selectedAnswer.correct ? 'text-green-400' : 'text-red-400'}`}>
+                  {selectedAnswer.correct ? '✓ Correct!' : '✗ Incorrect'}
+                </h4>
+                <p className="text-gray-300">
+                  {selectedAnswer.correct ? challenge.explanation : challenge.wrongExplanation}
+                </p>
+              </div>
+            )}
+
+            {/* Next Button */}
+            {showFeedback && (
+              <button
+                onClick={handleNext}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                {currentIndex < challenges.length - 1 ? 'Next Challenge' : 'Complete Investigation'}
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ForensicsGame;
