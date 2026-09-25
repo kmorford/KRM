@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weigh the Evidence: Strong vs. Weak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Zilla+Slab:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F7FB; --card:#FFFFFF; --ink:#1B2A4A; --muted:#55627D; --line:#CBD5E6;
+  --blue:#2F5DA8; --blue-soft:#E3EBF8;
+  --strong:#2E7D4F; --strong-soft:#E2F2E8;
+  --weak:#B3261E; --weak-soft:#FBE6E4;
+  --mid:#B7791F;
+  --hl:#FFE27A;
+  --focus:#2F5DA8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#111827; --card:#1B2537; --ink:#E7ECF5; --muted:#A5B0C4; --line:#33415A;
+    --blue:#8DB0EA; --blue-soft:#22324F;
+    --strong:#6FCB94; --strong-soft:#173526;
+    --weak:#F08A80; --weak-soft:#3A1E1E;
+    --mid:#E3B25A; --hl:#6B5A12; --focus:#8DB0EA;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111827; --card:#1B2537; --ink:#E7ECF5; --muted:#A5B0C4; --line:#33415A;
+  --blue:#8DB0EA; --blue-soft:#22324F;
+  --strong:#6FCB94; --strong-soft:#173526;
+  --weak:#F08A80; --weak-soft:#3A1E1E;
+  --mid:#E3B25A; --hl:#6B5A12; --focus:#8DB0EA;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;background:var(--paper);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:1.0625rem;line-height:1.55;
+}
+h1,h2,h3{font-family:"Zilla Slab",Rockwell,"Roboto Slab",Georgia,serif;line-height:1.15;margin:0}
+main{max-width:46rem;margin:0 auto;padding:2rem 1.25rem 4rem}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+
+/* Intro */
+.intro h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:700;letter-spacing:-.01em}
+.intro p{max-width:38rem;color:var(--muted);margin:1rem 0 0}
+.scale{margin:2rem 0 1.5rem}
+.scale-bar{height:14px;border-radius:7px;display:grid;grid-template-columns:1fr 1fr 1fr;overflow:hidden;border:1px solid var(--line)}
+.scale-bar span:nth-child(1){background:var(--weak)}
+.scale-bar span:nth-child(2){background:var(--mid)}
+.scale-bar span:nth-child(3){background:var(--strong)}
+.scale-labels{display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted);margin-top:.4rem}
+.traits{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0 2rem}
+.traits div{border-left:4px solid var(--line);padding:.25rem 0 .25rem .9rem}
+.traits .t-weak{border-color:var(--weak)}
+.traits .t-strong{border-color:var(--strong)}
+.traits h2{font-size:1.15rem;margin-bottom:.35rem}
+.traits ul{margin:0;padding-left:1.1rem;color:var(--muted);font-size:.97rem}
+@media (max-width:560px){.traits{grid-template-columns:1fr}}
+
+.btn{
+  display:inline-block;border:2px solid var(--blue);background:var(--blue);color:var(--card);
+  padding:.7rem 1.4rem;border-radius:999px;font-weight:700;cursor:pointer;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--blue)}
+
+/* Progress */
+.progress{display:flex;gap:.4rem;margin-bottom:1.5rem}
+.progress span{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.progress span.now{background:var(--blue)}
+.progress span.right{background:var(--strong)}
+.progress span.wrong{background:var(--weak)}
+.qcount{font-size:.95rem;color:var(--muted);margin-bottom:.5rem}
+
+/* Claim */
+.claim{
+  background:var(--card);border:2px solid var(--ink);border-radius:4px 18px 18px 18px;
+  padding:1.1rem 1.25rem;margin:0 0 1.25rem;
+}
+.claim small{display:block;color:var(--muted);font-size:.9rem;margin-bottom:.2rem}
+.claim h2{font-size:clamp(1.35rem,3.6vw,1.75rem);font-weight:700}
+.prompt{margin:0 0 1rem;font-weight:700}
+
+/* Options */
+.options{display:grid;gap:.75rem;list-style:none;margin:0;padding:0}
+.opt{
+  width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:12px;
+  padding:.9rem 1rem;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:.85rem;align-items:start;
+  transition:border-color .15s;
+}
+.opt:hover:not([disabled]){border-color:var(--blue)}
+.opt[disabled]{cursor:default}
+.letter{
+  font-family:"Zilla Slab",Georgia,serif;font-weight:700;width:2rem;height:2rem;border-radius:50%;
+  display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);font-size:1.05rem;
+}
+.opt .src{display:block;font-size:.88rem;color:var(--muted);margin-bottom:.15rem}
+.meter{display:none;margin-top:.7rem}
+.answered .meter{display:block}
+.meter-track{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.meter-fill{height:100%;width:0;border-radius:5px;transition:width .6s ease}
+.meter-note{font-size:.93rem;margin-top:.35rem;color:var(--muted)}
+.opt.is-best{border-color:var(--strong);background:var(--strong-soft)}
+.opt.is-best .letter{background:var(--strong);color:var(--card)}
+.opt.is-wrong{border-color:var(--weak);background:var(--weak-soft)}
+.opt.is-wrong .letter{background:var(--weak);color:var(--card)}
+.tag{font-weight:700;font-size:.9rem;margin-left:.35rem}
+.is-best .tag{color:var(--strong)}
+.is-wrong .tag{color:var(--weak)}
+
+/* Feedback */
+.feedback{margin-top:1.25rem;border-radius:12px;padding:1rem 1.15rem;background:var(--card);border:2px solid var(--line)}
+.feedback.good{border-color:var(--strong)}
+.feedback.bad{border-color:var(--weak)}
+.feedback h3{font-size:1.3rem;margin-bottom:.4rem}
+.feedback.good h3{color:var(--strong)}
+.feedback.bad h3{color:var(--weak)}
+.principle{display:inline;background:var(--hl);padding:0 .25rem;border-radius:3px;font-weight:700;color:var(--ink)}
+.feedback p{margin:.5rem 0 0}
+.actions{margin-top:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap}
+
+/* Results */
+.score{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;margin:.75rem 0 .5rem}
+.score strong{font-family:"Zilla Slab",Georgia,serif;font-size:clamp(3rem,10vw,4.5rem);line-height:1}
+.score span{color:var(--muted);font-size:1.1rem}
+.verdict{max-width:38rem;margin:0 0 2rem}
+.review{list-style:none;padding:0;margin:0;display:grid;gap:1rem}
+.review li{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--line);border-radius:10px;padding:1rem 1.1rem}
+.review li.right{border-left-color:var(--strong)}
+.review li.wrong{border-left-color:var(--weak)}
+.review h3{font-size:1.15rem;margin-bottom:.35rem}
+.review .picked{font-size:.95rem;color:var(--muted);margin:.25rem 0}
+.review .res{font-weight:700}
+.review li.right .res{color:var(--strong)}
+.review li.wrong .res{color:var(--weak)}
+.review p{margin:.4rem 0 0}
+.checklist{margin:2rem 0 0;padding:1.1rem 1.25rem;border:2px dashed var(--line);border-radius:12px}
+.checklist h2{font-size:1.35rem;margin-bottom:.5rem}
+.checklist ol{margin:0;padding-left:1.3rem}
+.checklist li{margin:.3rem 0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media (prefers-reduced-motion:reduce){.meter-fill,.opt{transition:none}}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+
+<script>
+const QUESTIONS = [
+  {
+    claim: "The new UltraBook laptop gets 12 hours of battery life.",
+    options: [
+      { src: "Manufacturer's ad", text: "A banner ad promises \"all-day battery that keeps up with you.\"", strength: 12,
+        note: "Vague wording from a seller with a clear motive. \"All-day\" isn't a measurement." },
+      { src: "Independent testing lab", text: "A lab ran the same video-playback test on 10 units at fixed brightness. The average was 11.6 hours.", strength: 90,
+        note: "Measured, repeatable, multiple units, and no stake in the result." },
+      { src: "Tech blogger", text: "\"I used it all day at a conference and it never died on me.\"", strength: 28,
+        note: "One person, one day, unknown settings. An anecdote, not a measurement." }
+    ],
+    best: 1,
+    principle: "Measured beats described",
+    why: "Strong evidence comes from a consistent, repeatable method applied to more than one case, by someone with nothing to gain. The ad is marketing and the blog post is a single experience. Neither tells you how long the battery actually lasts under known conditions."
+  },
+  {
+    claim: "Students who use the tutoring center pass Intro to Python at higher rates.",
+    options: [
+      { src: "College data report", text: "Pass rates for 412 students across three semesters, comparing tutored and non-tutored students with similar incoming GPAs.", strength: 88,
+        note: "Large sample, several semesters, and it accounts for a big alternative explanation (prior GPA)." },
+      { src: "Student comments", text: "Three students told their instructor that tutoring \"totally saved\" their grade.", strength: 25,
+        note: "Real experiences, but only three hand-picked voices. Students who struggled anyway may not speak up." },
+      { src: "Tutoring center poster", text: "A poster in the hallway reads \"Tutoring works! Ask anyone!\"", strength: 8,
+        note: "Promotional, no data, and from the group being evaluated." }
+    ],
+    best: 0,
+    principle: "Size and fairness of the sample",
+    why: "A few glowing stories can't tell you about the typical student. The data report looks at hundreds of students over time and compares them to similar students who didn't use tutoring, so the difference is more likely to come from tutoring itself rather than from stronger students choosing to go."
+  },
+  {
+    claim: "Energy drinks improve programming performance.",
+    options: [
+      { src: "Startup founder interview", text: "A famous founder credits energy drinks for the all-nighters that built his company.", strength: 10,
+        note: "Fame isn't expertise, and one success story ignores everyone for whom it didn't work." },
+      { src: "Online survey", text: "Programmers who drink energy drinks report working more hours per week than those who don't.", strength: 30,
+        note: "Correlation only, self-reported, and it measures hours, not performance." },
+      { src: "Controlled experiment", text: "120 volunteers were randomly given an energy drink or an identical-looking placebo, then scored on a timed debugging task. No significant difference was found.", strength: 92,
+        note: "Random assignment and a placebo isolate the drink's effect on the actual skill in question." }
+    ],
+    best: 2,
+    principle: "Correlation isn't causation",
+    why: "The survey shows two things occur together, but busy people might simply drink more caffeine. Only the experiment tests cause and effect: random assignment and a placebo rule out other explanations. Notice that the strongest evidence here goes against the claim. Strong evidence is about how reliable it is, not whether it agrees with you."
+  },
+  {
+    claim: "The VaultKey password manager is secure.",
+    options: [
+      { src: "App store listing", text: "4.8 stars from over 50,000 reviews.", strength: 18,
+        note: "Measures how much users like it. Most reviewers can't evaluate encryption." },
+      { src: "Independent security audit", text: "A published report from an outside security firm describing its testing methods, two vulnerabilities it found, and confirmation that both were fixed.", strength: 90,
+        note: "Qualified experts, a disclosed method, and specific findings you can check." },
+      { src: "Company press release", text: "\"VaultKey uses military-grade encryption to keep you safe.\"", strength: 12,
+        note: "Self-interested source using a buzzword with no technical meaning." }
+    ],
+    best: 1,
+    principle: "Expertise without a conflict of interest",
+    why: "Popularity is not proof of security, and a company will always describe its own product favorably. The audit comes from people qualified to test security, it explains how they tested, and it even reports problems. Admitting flaws is a sign of credibility, not weakness."
+  },
+  {
+    claim: "A newly announced vulnerability affects Linux kernel versions 6.1 through 6.6.",
+    options: [
+      { src: "Social media", text: "A screenshot of a post from an anonymous account, with no link, warning that \"all recent kernels are compromised.\"", strength: 6,
+        note: "Anonymous, unverifiable, and it can't even be traced to where it was posted." },
+      { src: "News article", text: "A tech news site summarizes \"reports\" that \"many Linux systems\" may be affected.", strength: 38,
+        note: "Secondhand and vague. Useful as a heads-up, but it doesn't say which versions." },
+      { src: "Official advisory", text: "The CVE entry and the kernel maintainers' security advisory, listing affected versions and the commits that patch it.", strength: 95,
+        note: "Primary source from the people responsible, with specific, checkable details." }
+    ],
+    best: 2,
+    principle: "Go to the primary source",
+    why: "Each step away from the original source loses detail and adds room for error. The news summary may be accurate, but it's vague. The advisory comes directly from the maintainers and names exact versions and fixes you can verify. When the stakes are high, like patching production servers, act on the primary source."
+  },
+  {
+    claim: "\"60% of small businesses close within six months of a cyberattack.\" You want to confirm this before using it in a paper.",
+    options: [
+      { src: "Original study", text: "The survey report the number supposedly comes from, including sample size, dates, and exactly what was asked.", strength: 90,
+        note: "Lets you see whether the statistic actually says what people claim it says." },
+      { src: "AI chatbot", text: "You ask an AI chatbot, and it confidently confirms the statistic.", strength: 10,
+        note: "AI tools can repeat popular errors or invent sources. Confidence isn't verification." },
+      { src: "Many websites", text: "Dozens of blogs and vendor sites repeat the same number, but none links to an original study.", strength: 15,
+        note: "Repetition isn't confirmation. They may all be copying each other." }
+    ],
+    best: 0,
+    principle: "Trace it back to the original",
+    why: "A statistic repeated a thousand times is still only as good as its origin. If you can't find the original study, you can't check the method, and you shouldn't treat the number as established. This particular statistic is a real example: it's widely repeated, but researchers have had trouble tracing it to a solid source."
+  }
+];
+
+const LETTERS = ["A","B","C","D"];
+const app = document.getElementById("app");
+let current = 0;
+let picks = [];
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function meterColor(v){return v>=70?"var(--strong)":v>=35?"var(--mid)":"var(--weak)"}
+function meterWord(v){return v>=70?"Strong":v>=35?"Moderate":"Weak"}
+
+function renderIntro(){
+  app.innerHTML = `
+  <section class="intro">
+    <h1>Weigh the evidence</h1>
+    <p>Every claim you'll meet, in a vendor pitch, a news story, or a chatbot's answer, rests on evidence. Some of it holds real weight. Some of it only sounds convincing. In six scenarios, pick the evidence you'd trust most. You'll see how each option measures up right after you choose.</p>
+    <div class="scale" aria-hidden="true">
+      <div class="scale-bar"><span></span><span></span><span></span></div>
+      <div class="scale-labels"><span>Weak</span><span>Moderate</span><span>Strong</span></div>
+    </div>
+    <div class="traits">
+      <div class="t-weak"><h2>Weak evidence tends to be</h2>
+        <ul><li>A single story or opinion</li><li>From someone with something to gain</li><li>Vague or impossible to check</li></ul></div>
+      <div class="t-strong"><h2>Strong evidence tends to be</h2>
+        <ul><li>Measured with a clear method</li><li>Based on many cases, fairly compared</li><li>From an expert or original source you can verify</li></ul></div>
+    </div>
+    <button class="btn" id="start">Start the activity</button>
+  </section>`;
+  document.getElementById("start").onclick = () => { current = 0; picks = []; renderQuestion(); };
+}
+
+function progressBar(){
+  return `<div class="progress" aria-hidden="true">${QUESTIONS.map((q,i)=>{
+    let c = "";
+    if (picks[i] !== undefined) c = picks[i] === q.best ? "right" : "wrong";
+    else if (i === current) c = "now";
+    return `<span class="${c}"></span>`;
+  }).join("")}</div>`;
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[current];
+  app.innerHTML = `
+    ${progressBar()}
+    <p class="qcount">Scenario ${current+1} of ${QUESTIONS.length}</p>
+    <div class="claim">
+      <small>The claim</small>
+      <h2 id="qhead" tabindex="-1">${esc(q.claim)}</h2>
+    </div>
+    <p class="prompt" id="prompt">Which piece of evidence is strongest?</p>
+    <ul class="options" role="list" aria-labelledby="prompt">
+      ${q.options.map((o,i)=>`
+        <li><button class="opt" data-i="${i}">
+          <span class="letter" aria-hidden="true">${LETTERS[i]}</span>
+          <span>
+            <span class="src">${esc(o.src)}<span class="tag"></span></span>
+            <span class="txt">${esc(o.text)}</span>
+            <span class="meter">
+              <span class="meter-track"><span class="meter-fill"></span></span>
+              <span class="meter-note"></span>
+            </span>
+          </span>
+        </button></li>`).join("")}
+    </ul>
+    <div id="fb"></div>`;
+  app.querySelectorAll(".opt").forEach(b => b.onclick = () => choose(+b.dataset.i));
+  document.getElementById("qhead").focus();
+}
+
+function choose(i){
+  const q = QUESTIONS[current];
+  picks[current] = i;
+  const correct = i === q.best;
+  const list = app.querySelector(".options");
+  list.classList.add("answered");
+  app.querySelectorAll(".opt").forEach((b, k) => {
+    b.disabled = true;
+    const o = q.options[k];
+    const tag = b.querySelector(".tag");
+    if (k === q.best){ b.classList.add("is-best"); tag.textContent = k===i ? "· Your pick, strongest" : "· Strongest"; }
+    else if (k === i){ b.classList.add("is-wrong"); tag.textContent = "· Your pick"; }
+    b.querySelector(".meter-note").textContent = `${meterWord(o.strength)}: ${o.note}`;
+    const fill = b.querySelector(".meter-fill");
+    fill.style.background = meterColor(o.strength);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ fill.style.width = o.strength + "%"; }));
+  });
+  // update progress
+  app.querySelector(".progress").outerHTML = progressBar();
+
+  const last = current === QUESTIONS.length - 1;
+  document.getElementById("fb").innerHTML = `
+    <div class="feedback ${correct?"good":"bad"}" role="status">
+      <h3 id="fbhead" tabindex="-1">${correct ? "Correct" : `Not quite. The strongest is ${LETTERS[q.best]}.`}</h3>
+      <span class="principle">${esc(q.principle)}</span>
+      <p>${esc(q.why)}</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="next">${last ? "See my results" : "Next scenario"}</button>
+    </div>`;
+  document.getElementById("fbhead").focus({preventScroll:true});
+  document.getElementById("fb").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"nearest"});
+  document.getElementById("next").onclick = () => {
+    if (last) renderResults(); else { current++; renderQuestion(); window.scrollTo(0,0); }
+  };
+}
+
+function renderResults(){
+  const score = picks.filter((p,i)=>p===QUESTIONS[i].best).length;
+  const verdict =
+    score === 6 ? "Perfect. You consistently looked past confident wording and popularity to how the evidence was actually gathered." :
+    score >= 4 ? "Solid work. Review the scenarios you missed below. Each one highlights a principle worth keeping in your toolkit." :
+    score >= 2 ? "You're building the skill. Read through the explanations below, then try again and focus on how each source got its information." :
+    "This is a tricky skill, and convincing-sounding evidence is designed to fool people. Read the explanations below, then give it another try.";
+  app.innerHTML = `
+    ${progressBar()}
+    <h1 id="rhead" tabindex="-1" style="font-size:clamp(2rem,5vw,2.8rem)">Your results</h1>
+    <div class="score"><strong>${score}/${QUESTIONS.length}</strong><span>strongest evidence identified</span></div>
+    <p class="verdict">${verdict}</p>
+    <ol class="review">
+      ${QUESTIONS.map((q,i)=>{
+        const ok = picks[i]===q.best;
+        const mine = q.options[picks[i]], best = q.options[q.best];
+        return `<li class="${ok?"right":"wrong"}">
+          <h3>${i+1}. ${esc(q.claim)}</h3>
+          <p class="picked"><span class="res">${ok?"Correct":"Missed"}</span>. You chose ${LETTERS[picks[i]]} (${esc(mine.src)})${ok?"":`; strongest was ${LETTERS[q.best]} (${esc(best.src)})`}.</p>
+          <span class="principle">${esc(q.principle)}</span>
+          <p>${esc(q.why)}</p>
+        </li>`;}).join("")}
+    </ol>
+    <section class="checklist">
+      <h2>Questions to ask about any evidence</h2>
+      <ol>
+        <li>Was it measured with a clear, repeatable method, or just described?</li>
+        <li>How many cases does it cover, and were they compared fairly?</li>
+        <li>Does it show cause, or only that two things happen together?</li>
+        <li>Does the source have the expertise, and do they gain from the claim?</li>
+        <li>Is this the original source, or a summary of a summary?</li>
+        <li>Can I trace it back and check it myself?</li>
+      </ol>
+    </section>
+    <div class="actions">
+      <button class="btn" id="retry">Try again</button>
+      <button class="btn ghost" id="home">Back to start</button>
+    </div>`;
+  document.getElementById("rhead").focus();
+  window.scrollTo(0,0);
+  document.getElementById("retry").onclick = () => { current=0; picks=[]; renderQuestion(); window.scrollTo(0,0); };
+  document.getElementById("home").onclick = renderIntro;
+}
+
+renderIntro();
+</script>
+</body>
+</html>
